@@ -8,6 +8,16 @@
 
 ## Run
 
+Set required secrets first:
+
+```bash
+export Jwt__SigningKey="<strong-random-signing-key>"
+export Auth__Username="<token-service-username>"
+export Auth__Password="<token-service-password>"
+```
+
+Then run:
+
 ```bash
 dotnet build gkama-aspire-backend.slnx
 dotnet run --project src/Gkama.AppHost/Gkama.AppHost.csproj
