@@ -18,6 +18,7 @@ using WorkTracker.Common;
 using WorkTracker.Common.Configuration;
 using WorkTracker.Common.Extensions;
 using WorkTracker.Common.Interfaces;
+using WorkTracker.Common.Repositories;
 using WorkTracker.Common.Services;
 
 namespace Microsoft.Extensions.Hosting;
@@ -44,6 +45,23 @@ public static class Extensions
             http.AddServiceDiscovery();
         });
 
+        return builder;
+    }
+
+    public static TBuilder AddApiServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    {
+        var configuration = builder.Configuration;
+
+        builder.ConfigureOpenTelemetry();
+        builder.AddDefaultHealthChecks();
+        builder.Services.AddServiceDiscovery();
+
+        builder.Services.ConfigureHttpClientDefaults(http =>
+        {
+            http.AddStandardResilienceHandler();
+            http.AddServiceDiscovery();
+        });
+
         // Common
         builder.Services.AddProblemDetails();
         builder.Services.AddEndpointsApiExplorer();
@@ -56,10 +74,11 @@ public static class Extensions
             });
         builder.AddRedisClient(connectionName: "worktracker-cache");
 
-        // Services
+        // Services & Repositories
         builder.Services.AddSingleton<IEnvironmentConfiguration, EnvironmentConfiguration>();
         builder.Services.AddScoped<ICacheService, CacheService>()
-            .AddScoped<IAuthService, AuthService>();
+            .AddScoped<IAuthService, AuthService>()
+            .AddScoped<IUserRepository, UserRepository>();
 
         // Database
         builder.Services.AddDatabaseConfiguration(configuration);

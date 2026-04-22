@@ -1,7 +1,6 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults & Aspire client integrations.
-builder.AddServiceDefaults();
+builder.AddApiServiceDefaults();
 
 builder.Services.AddProblemDetails()
     .AddOpenApi();
@@ -16,6 +15,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapDefaultEndpoints();
+app.MapControllers();
 
 await app.UseTestMigrationAsync(builder);
 
