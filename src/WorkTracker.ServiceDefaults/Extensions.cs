@@ -1,13 +1,24 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using WorkTracker.Common;
+using WorkTracker.Common.Configuration;
 using WorkTracker.Common.Extensions;
+using WorkTracker.Common.Interfaces;
+using WorkTracker.Common.Services;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -21,6 +32,8 @@ public static class Extensions
 
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        var configuration = builder.Configuration;
+
         builder.ConfigureOpenTelemetry();
         builder.AddDefaultHealthChecks();
         builder.Services.AddServiceDiscovery();
@@ -30,6 +43,32 @@ public static class Extensions
             http.AddStandardResilienceHandler();
             http.AddServiceDiscovery();
         });
+
+        // Common
+        builder.Services.AddProblemDetails();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
+        builder.AddRedisClient(connectionName: "worktracker-cache");
+
+        // Services
+        builder.Services.AddSingleton<IEnvironmentConfiguration, EnvironmentConfiguration>();
+        builder.Services.AddScoped<ICacheService, CacheService>()
+            .AddScoped<IAuthService, AuthService>();
+
+        // Database
+        builder.Services.AddDatabaseConfiguration(configuration);
+
+        // Options
+        builder.Services.AddOptions(configuration);
+
+        // Auth
+        builder.Services.AddWorkTrackerAuthentication(configuration);
 
         return builder;
     }
@@ -75,6 +114,58 @@ public static class Extensions
         }
 
         return builder;
+    }
+
+    public static IServiceCollection AddOptions(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<JwtConfiguration>(configuration.GetSection(JwtConfiguration.Section));
+
+        return services;
+    }
+
+    public static IServiceCollection AddDatabaseConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        var workTrackerConnectionString = configuration.GetConnectionString("worktracker")!;
+
+        services.AddDbContext<WorkTrackerDbContext>(options =>
+            options.UseNpgsql(workTrackerConnectionString)
+        );
+
+        services.AddHealthChecks()
+            .AddNpgSql(connectionString: workTrackerConnectionString);
+
+        return services;
+    }
+
+    public static IServiceCollection AddWorkTrackerAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                var jwtOptions = configuration
+                    .GetSection(JwtConfiguration.Section)
+                    .Get<JwtConfiguration>()!;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = jwtOptions.Audience,
+                    ValidIssuer = jwtOptions.Issuer,
+                    RequireExpirationTime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
+                    ValidateIssuerSigningKey = true,
+                };
+            });
+
+        var requireAuthPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+
+        services.AddAuthorizationBuilder()
+            .SetDefaultPolicy(requireAuthPolicy);
+
+        return services;
     }
 
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
