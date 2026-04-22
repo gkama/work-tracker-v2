@@ -15,6 +15,7 @@ namespace WorkTracker.Common.Extensions
             await dbContext.AddTestOrganizationsAsync(testMigrationContext);
             await dbContext.AddTestProjectsAsync(testMigrationContext);
             await dbContext.AddTestWorkItemsAsync(testMigrationContext);
+            await dbContext.AddTestUserOrganizationsAsync(testMigrationContext);
         }
 
         private static async Task<WorkTrackerDbContext> AddTestUsersAsync(this WorkTrackerDbContext dbContext, TestMigrationContext testMigrationContext)
@@ -192,6 +193,64 @@ namespace WorkTracker.Common.Extensions
 
             return dbContext;
         }
+
+        private static async Task<WorkTrackerDbContext> AddTestUserOrganizationsAsync(this WorkTrackerDbContext dbContext, TestMigrationContext testMigrationContext)
+        {
+            var userAdmin = testMigrationContext.Users.First(u => u.Username == "admin");
+            var userUser = testMigrationContext.Users.First(u => u.Username == "user");
+            var organizationKd = testMigrationContext.Organizations.First(o => o.Name == "Kress Designs");
+            var organizationGk = testMigrationContext.Organizations.First(o => o.Name == "GK Technologies");
+            var userOrganizations = new List<UserOrganization>
+            {
+                new()
+                {
+                    UserId = userAdmin.Id,
+                    OrganizationId = organizationKd.Id,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-1),
+                    User = userAdmin,
+                    Organization = organizationKd
+                },
+                new()
+                {
+                    UserId = userAdmin.Id,
+                    OrganizationId = organizationGk.Id,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-1),
+                    User = userAdmin,
+                    Organization = organizationGk
+                },
+                new()
+                {
+                    UserId = userUser.Id,
+                    OrganizationId = organizationKd.Id,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-1),
+                    User = userUser,
+                    Organization = organizationKd
+                },
+                new()
+                {
+                    UserId = userUser.Id,
+                    OrganizationId = organizationGk.Id,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-1),
+                    User = userUser,
+                    Organization = organizationGk
+                }
+            };
+
+            foreach (var userOrganization in userOrganizations)
+            {
+                await dbContext.UserOrganizations.AddAsync(userOrganization);
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            testMigrationContext.UserOrganizations.AddRange(userOrganizations);
+
+            return dbContext;
+        }
     }
 
     public class TestMigrationContext
@@ -200,5 +259,6 @@ namespace WorkTracker.Common.Extensions
         public List<Organization> Organizations { get; set; } = [];
         public List<Project> Projects { get; set; } = [];
         public List<WorkItem> WorkItems { get; set; } = [];
+        public List<UserOrganization> UserOrganizations { get; set; } = [];
     }
 }

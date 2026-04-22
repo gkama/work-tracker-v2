@@ -25,12 +25,35 @@ namespace WorkTracker.Common.Repositories
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>
-        public Task<User?> GetAsync(string username) =>
-            _cacheService.GetOrSetNullableAsync(
-                CacheKeys.GetUserKey(username),
-                () => _dbContext.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.Username == username));
+        public async Task<User?> GetAsync(string username)
+        {
+            User? user;
+            var cacheKey = CacheKeys.GetUserKey(username);
+
+            user = await _cacheService.GetAsync<User>(cacheKey);
+
+            if (user == null)
+            {
+                user = await _dbContext.Users
+                        .AsNoTracking()
+                        .Include(u => u.Organizations)
+                            .ThenInclude(uo => uo.Organization)
+                                .ThenInclude(o => o.Projects)
+                                    .ThenInclude(p => p.WorkItems)
+                                        .ThenInclude(wi => wi.WorkItemHours)
+                        .FirstOrDefaultAsync(x => x.Username == username);
+
+                if (user == null)
+                {
+                    return user;
+                }
+
+                await _cacheService.SetAsync(cacheKey, user);
+
+            }
+
+            return user;
+        }
 
         /// <summary>
         /// Login User

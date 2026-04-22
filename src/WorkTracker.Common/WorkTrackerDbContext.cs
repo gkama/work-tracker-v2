@@ -7,6 +7,7 @@ namespace WorkTracker.Common
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Organization> Organizations { get; set; }
+        public DbSet<UserOrganization> UserOrganizations { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<WorkItem> WorkItems { get; set; }
         public DbSet<WorkItemHours> WorkItemHours { get; set; }
@@ -48,6 +49,21 @@ namespace WorkTracker.Common
             // Organization
             modelBuilder.Entity<Organization>()
                 .ToTable("organization");
+
+            // UserOrganization
+            modelBuilder.Entity<UserOrganization>()
+                .ToTable("user_organization")
+                .HasKey(uo => new { uo.UserId, uo.OrganizationId });
+
+            modelBuilder.Entity<UserOrganization>()
+                .HasOne(uo => uo.User)
+                .WithMany(u => u.Organizations)
+                .HasForeignKey(uo => uo.UserId);
+
+            modelBuilder.Entity<UserOrganization>()
+                .HasOne(uo => uo.Organization)
+                .WithMany(o => o.UserOrganizations)
+                .HasForeignKey(uo => uo.OrganizationId);
 
             // Project
             modelBuilder.Entity<Project>()

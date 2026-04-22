@@ -8,6 +8,6 @@
         public int ProjectId { get; set; }
 
         public required Project Project { get; set; }
-        public List<WorkItemHours> WorkItemHours { get; set; } = [];
+        public ICollection<WorkItemHours> WorkItemHours { get; set; } = [];
     }
 }

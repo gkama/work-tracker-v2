@@ -6,8 +6,8 @@
         public required string Name { get; set; }
         public string? Description { get; set; }
         public int OrganizationId { get; set; }
-
         public required Organization Organization { get; set; }
-        public List<WorkItem> WorkItems { get; set; } = [];
+
+        public ICollection<WorkItem> WorkItems { get; set; } = [];
     }
 }

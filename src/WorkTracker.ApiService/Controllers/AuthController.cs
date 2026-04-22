@@ -35,5 +35,27 @@ namespace WorkTracker.ApiService.Controllers
 
             return new OkObjectResult(token);
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("me")]
+        public async Task<IActionResult> GetCurrentUserAsync()
+        {
+            var username = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _userRepository.GetAsync(username);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            return new OkObjectResult(user);
+        }
     }
 }
