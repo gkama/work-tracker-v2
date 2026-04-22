@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using WorkTracker.Common.Extensions;
 using WorkTracker.Common.Interfaces;
 using WorkTracker.Common.Requests;
 
@@ -55,7 +56,7 @@ namespace WorkTracker.ApiService.Controllers
                 return Unauthorized();
             }
 
-            return new OkObjectResult(user);
+            return new OkObjectResult(user.ToDto());
         }
     }
 }

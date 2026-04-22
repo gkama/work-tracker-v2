@@ -3,10 +3,16 @@ using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var databaseBuilder = builder.AddPostgres("worktracker-server").WithImageTag("alpine");
+var databaseBuilder = builder.AddPostgres("worktracker-server")
+    .WithImageTag("alpine");
+
 var database = databaseBuilder.AddDatabase("worktracker");
-var cache = builder.AddRedis("worktracker-cache").WithImageTag("alpine");
-var queue = builder.AddRabbitMQ("worktracker-queue").WithImageTag("3-alpine");
+
+var cache = builder.AddRedis("worktracker-cache")
+    .WithImageTag("alpine");
+
+var queue = builder.AddRabbitMQ("worktracker-queue")
+    .WithImageTag("3-alpine");
 
 var hostEnvironment = builder.Services.BuildServiceProvider().GetRequiredService<IHostEnvironment>();
 
