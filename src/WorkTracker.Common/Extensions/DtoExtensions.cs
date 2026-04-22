@@ -41,9 +41,7 @@ namespace WorkTracker.Common.Extensions
             Description = org.Description,
             CreatedAt = org.CreatedAt,
             UpdatedAt = org.UpdatedAt,
-            Projects = org.Projects
-                .Select(p => p.ToModel())
-                .ToList()
+            Projects = [.. org.Projects.Select(p => p.ToModel())]
         };
 
         public static ProjectDto ToDto(this Project project) => new()
@@ -68,9 +66,7 @@ namespace WorkTracker.Common.Extensions
             OrganizationId = project.OrganizationId,
             CreatedAt = project.CreatedAt,
             UpdatedAt = project.UpdatedAt,
-            WorkItems = project.WorkItems
-                .Select(w => w.ToModel())
-                .ToList(),
+            WorkItems = [.. project.WorkItems.Select(w => w.ToModel())],
             Organization = null!
         };
 
@@ -96,9 +92,7 @@ namespace WorkTracker.Common.Extensions
             ProjectId = workItem.ProjectId,
             CreatedAt = workItem.CreatedAt,
             UpdatedAt = workItem.UpdatedAt,
-            WorkItemHours = workItem.WorkItemHours
-                .Select(h => h.ToModel())
-                .ToList(),
+            WorkItemHours = [.. workItem.WorkItemHours.Select(h => h.ToModel())],
             Project = null!
         };
 
