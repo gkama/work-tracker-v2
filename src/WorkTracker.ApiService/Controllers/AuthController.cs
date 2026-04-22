@@ -15,13 +15,13 @@ namespace WorkTracker.ApiService.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IAuthService _authService;
-        private readonly IEventPublisher _eventPublisher;
+        private readonly IBackgroundEventPublisher _backgroundEventPublisher;
 
-        public AuthController(IUserRepository userRepository, IAuthService authService, IEventPublisher eventPublisher)
+        public AuthController(IUserRepository userRepository, IAuthService authService, IBackgroundEventPublisher backgroundEventPublisher)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            _eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
+            _backgroundEventPublisher = backgroundEventPublisher ?? throw new ArgumentNullException(nameof(backgroundEventPublisher));
         }
 
         [AllowAnonymous]
@@ -38,7 +38,7 @@ namespace WorkTracker.ApiService.Controllers
 
             var token = _authService.GenerateToken(user);
 
-            await _eventPublisher.PublishAsync(
+            await _backgroundEventPublisher.QueueAsync(
                 new UserLoggedInEvent(user.Id, user.Username)
                 {
                     Source = UserLoggedInEvent.EventSource,

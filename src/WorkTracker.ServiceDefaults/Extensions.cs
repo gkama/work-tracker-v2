@@ -80,8 +80,12 @@ public static class Extensions
         builder.Services.AddScoped<ICacheService, CacheService>()
             .AddScoped<IAuthService, AuthService>()
             .AddScoped<IUserRepository, UserRepository>()
-            .AddScoped<IEventPublisher, RabbitMqEventPublisher>()
+            .AddSingleton<IEventPublisher, RabbitMqEventPublisher>()
             .AddHostedService<RabbitMqTopologyService>();
+
+        builder.Services.AddSingleton<BackgroundEventPublisherService>();
+        builder.Services.AddSingleton<IBackgroundEventPublisher>(serviceProvider => serviceProvider.GetRequiredService<BackgroundEventPublisherService>());
+        builder.Services.AddHostedService(serviceProvider => serviceProvider.GetRequiredService<BackgroundEventPublisherService>());
 
         // Database
         builder.Services.AddDatabaseConfiguration(configuration);

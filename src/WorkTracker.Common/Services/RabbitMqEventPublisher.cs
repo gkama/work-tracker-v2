@@ -17,6 +17,14 @@ namespace WorkTracker.Common.Services
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
+        /// <summary>
+        /// Publish Event to RabbitMQ exchange with given routing key. Routing key determines which queues receive the event based on their bindings.
+        /// </summary>
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="cloudEvent"></param>
+        /// <param name="routingKey"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task PublishAsync<TData>(CloudEvent<TData> cloudEvent, string routingKey, CancellationToken cancellationToken = default)
         {
             await using var channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
