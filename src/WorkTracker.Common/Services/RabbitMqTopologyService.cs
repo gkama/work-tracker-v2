@@ -18,9 +18,14 @@ namespace WorkTracker.Common.Services
         public RabbitMqTopologyService(IConnection connection, ILogger<RabbitMqTopologyService> logger)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Declaring RabbitMQ topology on exchange '{Exchange}'", RabbitMqKeys.ExchangeName);
@@ -44,8 +49,21 @@ namespace WorkTracker.Common.Services
             _logger.LogInformation("RabbitMQ topology declared successfully");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="queue"></param>
+        /// <param name="routingKey"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private static async Task DeclareAndBindAsync(
             IChannel channel,
             string queue,

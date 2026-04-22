@@ -65,6 +65,7 @@ public static class Extensions
         // Common
         builder.Services.AddProblemDetails();
         builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddControllers()
             .AddJsonOptions(options =>
             {

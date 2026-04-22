@@ -19,9 +19,9 @@ namespace WorkTracker.ApiService.Controllers
 
         public AuthController(IUserRepository userRepository, IAuthService authService, IBackgroundEventPublisher backgroundEventPublisher)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            _backgroundEventPublisher = backgroundEventPublisher ?? throw new ArgumentNullException(nameof(backgroundEventPublisher));
+            _userRepository = userRepository;
+            _authService = authService;
+            _backgroundEventPublisher = backgroundEventPublisher;
         }
 
         [AllowAnonymous]

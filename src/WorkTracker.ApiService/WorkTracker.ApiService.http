@@ -19,3 +19,14 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ###
+
+POST {{ApiService_HostAddress}}/api/organization
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+{
+    "name": "TestOrg",
+    "description": "Test Organization"
+}
+
+###

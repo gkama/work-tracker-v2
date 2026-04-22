@@ -25,6 +25,14 @@ namespace WorkTracker.Common.Services
             });
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TData"></typeparam>
+        /// <param name="cloudEvent"></param>
+        /// <param name="routingKey"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task QueueAsync<TData>(CloudEvent<TData> cloudEvent, string routingKey, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(cloudEvent);
@@ -37,6 +45,11 @@ namespace WorkTracker.Common.Services
             await _queue.Writer.WriteAsync(queuedEvent, cancellationToken);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stoppingToken"></param>
+        /// <returns></returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await foreach (var queuedEvent in _queue.Reader.ReadAllAsync(stoppingToken))
@@ -56,12 +69,22 @@ namespace WorkTracker.Common.Services
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public override Task StopAsync(CancellationToken cancellationToken)
         {
             _queue.Writer.TryComplete();
             return base.StopAsync(cancellationToken);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="RoutingKey"></param>
+        /// <param name="PublishAsync"></param>
         private sealed record QueuedEvent(
             string RoutingKey,
             Func<CancellationToken, Task> PublishAsync);
