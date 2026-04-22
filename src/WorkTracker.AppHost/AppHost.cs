@@ -14,8 +14,8 @@ var database = databaseBuilder.AddDatabase("worktracker");
 var cache = builder.AddRedis("worktracker-cache")
     .WithImageTag("alpine");
 
-var rabbitMqUsername = builder.AddParameter("rabbitmq-username", value: "worktracker", secret: false);
-var rabbitMqPassword = builder.AddParameter("rabbitmq-password", value: "worktracker", secret: true);
+var rabbitMqUsername = builder.AddParameter("rabbitmq-username", value: "guest", secret: false);
+var rabbitMqPassword = builder.AddParameter("rabbitmq-password", value: "guest", secret: true);
 
 var queue = builder.AddRabbitMQ("worktracker-queue", userName: rabbitMqUsername, password: rabbitMqPassword)
     .WithImageTag(isDevelopment ? "3-management-alpine" : "alpine");

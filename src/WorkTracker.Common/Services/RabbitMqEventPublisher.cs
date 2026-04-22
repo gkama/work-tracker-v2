@@ -1,6 +1,8 @@
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
+using WorkTracker.Common.Constants;
+using WorkTracker.Common.Helpers;
 using WorkTracker.Common.IntegrationEvents;
 using WorkTracker.Common.Interfaces;
 
@@ -8,9 +10,6 @@ namespace WorkTracker.Common.Services
 {
     public sealed class RabbitMqEventPublisher : IEventPublisher
     {
-        private const string ExchangeName = "worktracker.events";
-        private const string ExchangeType = "topic";
-
         private readonly IConnection _connection;
 
         public RabbitMqEventPublisher(IConnection connection)
@@ -22,17 +21,7 @@ namespace WorkTracker.Common.Services
         {
             await using var channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
-            await channel.ExchangeDeclareAsync(
-                exchange: ExchangeName,
-                type: ExchangeType,
-                durable: true,
-                autoDelete: false,
-                cancellationToken: cancellationToken);
-
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cloudEvent, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-            }));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cloudEvent, JsonHelper.Options));
 
             var properties = new BasicProperties
             {
@@ -44,7 +33,7 @@ namespace WorkTracker.Common.Services
             };
 
             await channel.BasicPublishAsync(
-                exchange: ExchangeName,
+                exchange: RabbitMqKeys.ExchangeName,
                 routingKey: routingKey,
                 mandatory: false,
                 basicProperties: properties,

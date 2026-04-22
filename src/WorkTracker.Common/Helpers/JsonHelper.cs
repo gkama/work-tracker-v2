@@ -5,7 +5,7 @@ namespace WorkTracker.Common.Helpers
 {
     public static class JsonHelper
     {
-        private static JsonSerializerOptions Options => CreateOptions();
+        public static JsonSerializerOptions Options => CreateOptions();
 
         private static JsonSerializerOptions CreateOptions()
         {

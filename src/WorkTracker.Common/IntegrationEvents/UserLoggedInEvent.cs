@@ -1,3 +1,5 @@
+using WorkTracker.Common.Constants;
+
 namespace WorkTracker.Common.IntegrationEvents
 {
     /// <summary>
@@ -6,9 +8,10 @@ namespace WorkTracker.Common.IntegrationEvents
     /// </summary>
     public sealed record UserLoggedInEvent : CloudEvent<UserLoggedInData>
     {
-        public const string EventType = "com.worktracker.user.loggedin";
-        public const string EventSource = "/worktracker/auth";
-        public const string RoutingKey = "user.loggedin";
+        public const string EventType = RabbitMqKeys.UserEventType;
+        public const string EventSource = RabbitMqKeys.UserEventSource;
+        public const string RoutingKey = RabbitMqKeys.UserRoutingKey;
+        public const string QueueName = RabbitMqKeys.UserQueueName;
 
         public UserLoggedInEvent(int userId, string username) : base()
         {
