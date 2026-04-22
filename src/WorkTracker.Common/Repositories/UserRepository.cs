@@ -20,6 +20,11 @@ namespace WorkTracker.Common.Repositories
             _cacheService = cacheService;
         }
 
+        /// <summary>
+        /// Get User by username
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
         public Task<User?> GetAsync(string username) =>
             _cacheService.GetOrSetNullableAsync(
                 CacheKeys.GetUserKey(username),
@@ -27,10 +32,16 @@ namespace WorkTracker.Common.Repositories
                     .AsNoTracking()
                     .FirstOrDefaultAsync(x => x.Username == username));
 
+        /// <summary>
+        /// Login User
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        /// <exception cref="ApiException"></exception>
         public async Task<User> LoginAsync(string? username, string? password)
         {
-            if (string.IsNullOrEmpty(username)
-                || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
                 throw new ApiException(HttpStatusCode.Unauthorized);
             }
@@ -39,7 +50,6 @@ namespace WorkTracker.Common.Repositories
                 ?? throw new ApiException(HttpStatusCode.NotFound);
 
             var isValidPassword = EncryptionService.Verify(password, user.Password);
-
             if (!isValidPassword)
             {
                 throw new ApiException(HttpStatusCode.Unauthorized);
