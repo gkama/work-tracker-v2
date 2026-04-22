@@ -1,0 +1,6 @@
+@Gkama.BusinessApi_HostAddress = http://localhost:5213
+
+GET {{Gkama.BusinessApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

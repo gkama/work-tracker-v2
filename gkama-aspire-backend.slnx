@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Gkama.AppHost/Gkama.AppHost.csproj" />
+    <Project Path="src/Gkama.AuthApi/Gkama.AuthApi.csproj" />
+    <Project Path="src/Gkama.BusinessApi/Gkama.BusinessApi.csproj" />
+  </Folder>
+</Solution>
