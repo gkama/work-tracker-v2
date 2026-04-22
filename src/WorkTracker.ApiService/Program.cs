@@ -17,4 +17,6 @@ if (app.Environment.IsDevelopment())
 
 app.MapDefaultEndpoints();
 
+await app.UseTestMigrationAsync(builder);
+
 app.Run();
