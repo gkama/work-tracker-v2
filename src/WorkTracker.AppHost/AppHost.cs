@@ -18,7 +18,7 @@ var rabbitMqUsername = builder.AddParameter("rabbitmq-username", value: "guest",
 var rabbitMqPassword = builder.AddParameter("rabbitmq-password", value: "guest", secret: true);
 
 var queue = builder.AddRabbitMQ("worktracker-queue", userName: rabbitMqUsername, password: rabbitMqPassword)
-    .WithImageTag(isDevelopment ? "3-management-alpine" : "alpine");
+    .WithImageTag(isDevelopment ? "management-alpine" : "alpine");
 
 if (isDevelopment)
 {
