@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using WorkTracker.Common.Dtos;
 using WorkTracker.Common.Extensions;
+using WorkTracker.Common.IntegrationEvents;
 using WorkTracker.Common.Interfaces;
 using WorkTracker.Common.Requests;
 
@@ -13,11 +15,13 @@ namespace WorkTracker.ApiService.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IAuthService _authService;
+        private readonly IEventPublisher _eventPublisher;
 
-        public AuthController(IUserRepository userRepository, IAuthService authService)
+        public AuthController(IUserRepository userRepository, IAuthService authService, IEventPublisher eventPublisher)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
         }
 
         [AllowAnonymous]
@@ -33,6 +37,16 @@ namespace WorkTracker.ApiService.Controllers
             }
 
             var token = _authService.GenerateToken(user);
+
+            await _eventPublisher.PublishAsync(
+                new UserLoggedInEvent(user.Id, user.Username)
+                {
+                    Source = UserLoggedInEvent.EventSource,
+                    Type = UserLoggedInEvent.EventType,
+                    Data = new UserLoggedInData(user.Id, user.Username, DateTimeOffset.UtcNow)
+                },
+                UserLoggedInEvent.RoutingKey,
+                HttpContext.RequestAborted);
 
             return new OkObjectResult(token);
         }

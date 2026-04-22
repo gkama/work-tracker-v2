@@ -73,12 +73,14 @@ public static class Extensions
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
         builder.AddRedisClient(connectionName: "worktracker-cache");
+        builder.AddRabbitMQClient(connectionName: "worktracker-queue");
 
         // Services & Repositories
         builder.Services.AddSingleton<IEnvironmentConfiguration, EnvironmentConfiguration>();
         builder.Services.AddScoped<ICacheService, CacheService>()
             .AddScoped<IAuthService, AuthService>()
-            .AddScoped<IUserRepository, UserRepository>();
+            .AddScoped<IUserRepository, UserRepository>()
+            .AddScoped<IEventPublisher, RabbitMqEventPublisher>();
 
         // Database
         builder.Services.AddDatabaseConfiguration(configuration);
