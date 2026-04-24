@@ -124,7 +124,7 @@ namespace WorkTracker.Common.Repositories
                 OrganizationId = model.Id,
                 CreatedAt = now,
                 UpdatedAt = now,
-                User = await _dbContext.Users.FirstAsync(u => u.Id == currentUser.Id),
+                User = null!,
                 Organization = model
             };
 
