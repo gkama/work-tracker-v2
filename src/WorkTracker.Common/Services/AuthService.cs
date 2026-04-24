@@ -31,9 +31,13 @@ namespace WorkTracker.Common.Services
             _jwtExpiresInMinutes = _environmentConfiguration.JwtConfiguration.ExpiresInMinutes;
         }
 
+        /// <summary>
+        /// Generate Token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public AuthTokenResponse GenerateToken(User user)
         {
-
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -41,10 +45,10 @@ namespace WorkTracker.Common.Services
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new(JwtRegisteredClaimNames.UniqueName, user.Username),
-                new("first_name", user.FirstName ?? ""),
-                new("last_name", user.LastName ?? ""),
-                new("email", user.Email ?? ""),
-                new("username", user.Username ?? ""),
+                new("first_name", user.FirstName ?? string.Empty),
+                new("last_name", user.LastName ?? string.Empty),
+                new("email", user.Email ?? string.Empty),
+                new("username", user.Username ?? string.Empty),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -64,6 +68,12 @@ namespace WorkTracker.Common.Services
             };
         }
 
+        /// <summary>
+        /// Validate token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="ApiException"></exception>
         public ClaimsPrincipal? ValidateToken(string token)
         {
             var validationParameters = new TokenValidationParameters

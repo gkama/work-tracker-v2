@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Security.Claims;
 using WorkTracker.Common.Exceptions;
+using WorkTracker.Common.Models;
 
 namespace WorkTracker.Common.Repositories
 {
@@ -15,7 +15,19 @@ namespace WorkTracker.Common.Repositories
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        protected (int Id, string Username) GetCurrentUser()
+        /// <summary>
+        /// Get Current user
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ApiException"></exception>
+        protected User GetCurrentUser() => GetUserFromClaims();
+
+        /// <summary>
+        /// Get a User from claims
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ApiException"></exception>
+        private User GetUserFromClaims()
         {
             var user = _httpContextAccessor.HttpContext?.User;
             if (user?.Identity?.IsAuthenticated != true)
@@ -23,16 +35,21 @@ namespace WorkTracker.Common.Repositories
                 throw new ApiException(HttpStatusCode.Unauthorized);
             }
 
-            var userIdValue = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            var username = user.Identity.Name ?? user.FindFirst(ClaimTypes.Name)?.Value;
+            var id = user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? "0";
+            var username = user.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
+            var firstName = user.FindFirst("first_name")?.Value ?? string.Empty;
+            var lastName = user.FindFirst("last_name")?.Value ?? string.Empty;
+            var email = user.FindFirst("email")?.Value ?? string.Empty;
 
-            if (!int.TryParse(userIdValue, out var userId)
-                || string.IsNullOrWhiteSpace(username))
+            return new User
             {
-                throw new ApiException(HttpStatusCode.Unauthorized, "Invalid user.");
-            }
-
-            return (userId, username);
+                Id = int.TryParse(id, out var userId) ? userId : 0,
+                Username = username,
+                Password = string.Empty, // Password should not be stored in claims
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email
+            };
         }
     }
 }
