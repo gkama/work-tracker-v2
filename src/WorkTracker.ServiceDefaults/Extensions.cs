@@ -65,6 +65,7 @@ public static class Extensions
         // Common
         builder.Services.AddProblemDetails();
         builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddControllers()
             .AddJsonOptions(options =>
             {
@@ -73,12 +74,19 @@ public static class Extensions
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
         builder.AddRedisClient(connectionName: "worktracker-cache");
+        builder.AddRabbitMQClient(connectionName: "worktracker-queue");
 
         // Services & Repositories
         builder.Services.AddSingleton<IEnvironmentConfiguration, EnvironmentConfiguration>();
         builder.Services.AddScoped<ICacheService, CacheService>()
             .AddScoped<IAuthService, AuthService>()
-            .AddScoped<IUserRepository, UserRepository>();
+            .AddScoped<IUserRepository, UserRepository>()
+            .AddSingleton<IEventPublisher, RabbitMqEventPublisher>()
+            .AddHostedService<RabbitMqTopologyService>();
+
+        builder.Services.AddSingleton<BackgroundEventPublisherService>();
+        builder.Services.AddSingleton<IBackgroundEventPublisher>(serviceProvider => serviceProvider.GetRequiredService<BackgroundEventPublisherService>());
+        builder.Services.AddHostedService(serviceProvider => serviceProvider.GetRequiredService<BackgroundEventPublisherService>());
 
         // Database
         builder.Services.AddDatabaseConfiguration(configuration);

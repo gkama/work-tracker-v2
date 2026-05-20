@@ -1,3 +1,5 @@
+using WorkTracker.ApiService.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddApiServiceDefaults();
@@ -7,7 +9,7 @@ builder.Services.AddProblemDetails()
 
 var app = builder.Build();
 
-app.UseExceptionHandler();
+app.UseMiddleware<ApiExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

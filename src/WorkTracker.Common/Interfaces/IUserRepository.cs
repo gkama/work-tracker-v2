@@ -6,5 +6,6 @@ namespace WorkTracker.Common.Interfaces
     {
         Task<User?> GetAsync(string username);
         Task<User> LoginAsync(string? username, string? password);
+        Task<Organization> CreateOrganizationAsync(Organization model);
     }
 }

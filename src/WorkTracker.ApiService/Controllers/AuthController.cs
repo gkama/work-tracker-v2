@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using WorkTracker.Common.Dtos;
+using WorkTracker.Common.Extensions;
+using WorkTracker.Common.IntegrationEvents;
 using WorkTracker.Common.Interfaces;
 using WorkTracker.Common.Requests;
 
@@ -12,11 +15,13 @@ namespace WorkTracker.ApiService.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IAuthService _authService;
+        private readonly IBackgroundEventPublisher _backgroundEventPublisher;
 
-        public AuthController(IUserRepository userRepository, IAuthService authService)
+        public AuthController(IUserRepository userRepository, IAuthService authService, IBackgroundEventPublisher backgroundEventPublisher)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _userRepository = userRepository;
+            _authService = authService;
+            _backgroundEventPublisher = backgroundEventPublisher;
         }
 
         [AllowAnonymous]
@@ -32,6 +37,16 @@ namespace WorkTracker.ApiService.Controllers
             }
 
             var token = _authService.GenerateToken(user);
+
+            await _backgroundEventPublisher.QueueAsync(
+                new UserLoggedInEvent(user.Id, user.Username)
+                {
+                    Source = UserLoggedInEvent.EventSource,
+                    Type = UserLoggedInEvent.EventType,
+                    Data = new UserLoggedInData(user.Id, user.Username, DateTimeOffset.UtcNow)
+                },
+                UserLoggedInEvent.RoutingKey,
+                HttpContext.RequestAborted);
 
             return new OkObjectResult(token);
         }
@@ -55,7 +70,7 @@ namespace WorkTracker.ApiService.Controllers
                 return Unauthorized();
             }
 
-            return new OkObjectResult(user);
+            return new OkObjectResult(user.ToDto());
         }
     }
 }

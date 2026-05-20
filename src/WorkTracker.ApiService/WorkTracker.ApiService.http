@@ -19,3 +19,49 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ###
+
+POST {{ApiService_HostAddress}}/api/organization
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+{
+    "name": "TestOrg",
+    "description": "Test Organization"
+}
+
+###
+
+POST {{ApiService_HostAddress}}/api/organization
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+{
+    "name": "TestOrgWithProject",
+    "description": "Test Organization with Project",
+    "projects": [
+      {
+        "name": "TestProject",
+        "description": "Test Project within Organization",
+        "work_items": [
+          {
+            "title": "Test Work Item",
+            "description": "This is a test work item",
+            "work_item_hours": [
+              {
+                "description": "test-wi-1",
+                "date": "2026-04-01",
+                "hours": 4
+              },
+              {
+                "description": "test-wi-2",
+                "date": "2026-04-02",
+                "hours": 3
+              }
+            ]
+          }
+        ]
+      }
+    ]
+}
+
+###
